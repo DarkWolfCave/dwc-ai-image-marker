@@ -5,6 +5,28 @@
 Alle signifikanten Änderungen in diesem Projekt werden in diesem Dokument festgehalten. 
 The English version can be found below.
 
+
+## [1.1.1] - 07.02.2025
+
+### Hinzugefügt
+- Einführung der Klasse `Dwc_Ai_Marker_Activator` zur Handhabung von Aktivierungs- und Deaktivierungshooks.
+- Helfermethoden zur Bereitstellung von Plugin-URL und -Pfad implementiert.
+- Unterstützung für Yoda Conditions zur Verbesserung der Code-Qualität hinzugefügt.
+- Nonce-Validierungen und Sicherheitsprüfungen ergänzt, um Formulareingaben abzusichern.
+- Bulk-Aktionen zum effizienten Aktualisieren von KI-markierten Bildern hinzugefügt.
+- Erweiterte Benutzeroberfläche mit erklärenden Kommentaren und Labels zur Verbesserung der Benutzererfahrung.
+- CSS-Stile in `dwc-ai-marker.css` zur Konsistenz und Darstellung angepasst.
+
+### Geändert
+- `Plugin URI` und `Description` aktualisiert, um eine genauere Beschreibung zu bieten.
+- Kommentare und Dokumentation überarbeitet, um den Code verständlicher zu gestalten.
+
+### Behoben
+- Nicht zutreffend
+
+### Sicherheit
+- Nonce-Überprüfungen zur Sicherung von Formulareingaben hinzugefügt.
+
 ## [1.1.0] - 01.02.2025
 
 ### Hinzugefügt
@@ -41,6 +63,27 @@ The English version can be found below.
 ---
 
 ## English
+
+## [1.1.1] - 07.02.2025
+
+### Added
+- Introduced `Dwc_Ai_Marker_Activator` class for handling activation and deactivation hooks.
+- Implemented helper methods for providing plugin URL and path.
+- Added support for Yoda Conditions to improve code quality.
+- Included nonce validations and security checks to secure form inputs.
+- Added bulk actions to efficiently update AI-marked images.
+- Enhanced user interface with explanatory comments and labels for better user experience.
+- Adjusted CSS styles in `dwc-ai-marker.css` for consistency and presentation.
+
+### Changed
+- Updated `Plugin URI` and `Description` for a more accurate representation.
+- Revised comments and documentation to make the code more understandable.
+
+### Fixed
+- Not applicable
+
+### Security
+- Added nonce checks to secure form inputs.
 
 ## [1.1.0] - 01.02.2025
 
