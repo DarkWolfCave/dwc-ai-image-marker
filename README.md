@@ -22,9 +22,10 @@ Der DWC AI Image Marker ist ein WordPress-Plugin, das KI-generierte Bilder in de
 
 ## Installation
 
-1. Lade das Plugin-Verzeichnis in das `/wp-content/plugins/` Verzeichnis hoch.
-2. Aktiviere das Plugin über das 'Plugins' Menü in WordPress.
-3. Konfiguriere das Plugin über das 'Einstellungen' Menü unter 'AI Image Marker'.
+1. Lade dir die [ZIP-Datei](https://github.com/DarkWolfCave/dwc-ai-image-marker/archive/refs/heads/main.zip) herunter.
+2. In WordPress navigiere zu Plugins -> Neues Plugin hinzufügen -> Plugin hochladen -> installieren.
+3. Aktiviere das Plugin.
+4. Konfiguriere das Plugin über das 'Einstellungen' Menü unter 'AI Image Marker'.
 
 ## Nutzung
 
@@ -32,15 +33,7 @@ Nach der Aktivierung des Plugins werden alle Medienbilder auf KI-Erzeugung gepr�
 
 ## Änderungshistorie
 
-### Version 1.1.0
-- Hinzufügung von benutzerdefinierbaren CSS-Optionen via Admin-Oberfläche
-- Unterstützung zur Anpassung von Badge-Hintergrundfarbe, Schriftart, Transparenz und Randabständen
-- JavaScript-Funktionalität zum Zurücksetzen auf Standardwerte
-
-### Version 1.0.1
-- Initiale Veröffentlichung.
-- Hinzufügen von Admin-Filter- und Sortierfunktionen.
-- Unterstützung für GenerateBlocks Image Block.
+Für alle Änderungen siehe dir bitte die  [CHANGELOG](CHANGELOG.md) an.
 
 ## Lizenz
 Dieses Plugin ist unter der GPL-Lizenz veröffentlicht. Weitere Informationen findest du in der [LICENSE](LICENSE).
