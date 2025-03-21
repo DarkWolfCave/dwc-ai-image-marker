@@ -5,6 +5,31 @@
 Alle signifikanten Änderungen in diesem Projekt werden in diesem Dokument festgehalten.
 The English version can be found below.
 
+## [1.2.2] - 21.03.2025
+
+### Hinzugefügt
+
+- Strikte Trennung von Plugin-Initialisierung und Loader-Klasse gemäß WordPress-Standards
+- Optimierte Datenbankzugriffe mit Caching-Mechanismen für bessere Performance
+- Vollständige PHPDoc-Kommentierung für alle Methoden und Parameter
+
+### Geändert
+
+- Überarbeitung des gesamten Codes nach WordPress Coding Standards
+- Aktualisierung aller Kommentare mit konsistenter Punktsetzung
+- Konsequente Verwendung von Yoda-Bedingungen im gesamten Code
+- Verbesserte Fehlerbehandlung für DOM-Manipulationen
+
+### Verbessert
+
+- Optimierte Methodensignaturen für Filter-Callbacks
+- Bessere Dokumentation von ungenutzen aber erforderlichen Filterhook-Parametern
+- Konsistente Formatierung und Namenskonventionen im gesamten Plugin
+
+### Sicherheit
+
+- Verbesserte Behandlung von Nonce-Validierungen bei Formulareinreichungen
+
 ## [1.2.1] - 19.03.2025
 
 ### Verbessert
@@ -121,6 +146,31 @@ The English version can be found below.
 ---
 
 ## English
+
+## [1.2.2] - 21.03.2025
+
+### Added
+
+- Strict separation of plugin initialization and loader class according to WordPress standards
+- Optimized database access with caching mechanisms for better performance
+- Complete PHPDoc commenting for all methods and parameters
+
+### Changed
+
+- Revision of the entire code according to WordPress Coding Standards
+- Updated all comments with consistent punctuation
+- Consistent use of Yoda conditions throughout the code
+- Improved error handling for DOM manipulations
+
+### Improved
+
+- Optimized method signatures for filter callbacks
+- Better documentation of unused but required filter hook parameters
+- Consistent formatting and naming conventions throughout the plugin
+
+### Security
+
+- Enhanced handling of nonce validations for form submissions
 
 ## [1.2.1] - 19.03.2025
 

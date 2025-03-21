@@ -3,7 +3,7 @@
 **Plugin Name:** DWC AI Image Marker  
 **Plugin URI:** [https://darkwolfcave.de](https://darkwolfcave.de)  
 **Description:** Automatisches Markieren von KI-generierten Bildern mit einem Badge in WordPress.  
-**Version:** 1.2.1  
+**Version:** 1.2.2  
 **Author:** DarkWolfCave.de  
 **License:** GPL v2 or later
 
@@ -25,6 +25,14 @@ dem Neuladen der Seite.
 - Leistungsoptimierungen für Seiten mit vielen Bildern
 - Debug-Modus für erweiterte Fehlerbehebung
 - Unterstützung von GenerateBlocks Image Blocks
+
+### Neue Funktionen in Version 1.2.2
+
+- **Verbesserte Code-Qualität**: Umfassende Einhaltung der WordPress Coding Standards
+- **Optimierte Dokumentation**: Vollständige PHPDoc-Kommentare für alle Methoden und Parameter
+- **Optimierter Datenbankzugriff**: Effizientere Datenbankabfragen mit WordPress-Caching-Mechanismen
+- **Verbesserte Fehlerbehandlung**: Robustere DOM-Manipulation und Fehlerbehandlung
+- **Neue Dateistruktur**: Strikte Trennung von Plug-in-Loader und Initialisierung nach WordPress Best Practices
 
 ### Neue Funktionen in Version 1.2.1
 
@@ -52,6 +60,11 @@ dem Neuladen der Seite.
 2. In WordPress navigiere zu Plugins -> Neues Plugin hinzufügen -> Plugin hochladen -> installieren.
 3. Aktiviere das Plugin.
 4. Konfiguriere das Plugin über das 'Einstellungen' Menü unter 'AI Image Marker'.
+
+## Anforderungen
+
+- WordPress 6.0 oder höher
+- PHP 7.4 oder höher
 
 ## Nutzung
 

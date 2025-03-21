@@ -1,12 +1,12 @@
 <?php
 /**
- * Admin-Funktionen für das Plugin
+ * Admin-Funktionen für das Plugin.
  *
  * @package DWC_AI_Image_Marker
  * @subpackage DWC_AI_Image_Marker/admin
  */
 
-// Sicherheitscheck
+// Sicherheitscheck.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class Dwc_Ai_Marker_Admin
  *
- * Verwaltet die Admin-Funktionen des Plugins
+ * Verwaltet die Admin-Funktionen des Plugins.
  *
  * @since 1.1.0
  */
@@ -24,7 +24,7 @@ class Dwc_Ai_Marker_Admin {
 	 * Initialisiert die Admin-Funktionen und Hooks.
 	 */
 	public function __construct() {
-		// Admin-Hooks
+		// Admin-Hooks.
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_filter( 'bulk_actions-upload', array( $this, 'add_bulk_actions' ) );
@@ -34,16 +34,15 @@ class Dwc_Ai_Marker_Admin {
 		add_action( 'manage_media_custom_column', array( $this, 'manage_media_custom_column' ), 10, 2 );
 		add_filter( 'manage_upload_sortable_columns', array( $this, 'register_sortable_columns' ) );
 		add_action( 'pre_get_posts', array( $this, 'sort_columns' ) );
-		
-		// Hooks für Medienbibliothek
+		// Hooks für Medienbibliothek.
 		add_action( 'init', array( $this, 'init_media_hooks' ) );
 	}
 
 	/**
-	 * Initialisiert Hooks für die Medienbibliothek
+	 * Initialisiert Hooks für die Medienbibliothek.
 	 */
 	public function init_media_hooks() {
-		// Felder in der Medienbibliothek
+		// Felder in der Medienbibliothek.
 		add_filter( 'attachment_fields_to_edit', array( $this, 'add_ai_image_field' ), 10, 2 );
 		add_filter( 'attachment_fields_to_save', array( $this, 'save_ai_image_field' ), 10, 2 );
 	}
@@ -90,7 +89,7 @@ class Dwc_Ai_Marker_Admin {
 	 *
 	 * @since 1.1.0
 	 * @updated 1.2.0 Unterstützung für debug_enabled hinzugefügt.
-	 * 
+	 *
 	 * @return array Sanitized settings.
 	 */
 	public function sanitize_settings( $input ) {
@@ -129,46 +128,46 @@ class Dwc_Ai_Marker_Admin {
 				<style>
 					.dwc-padding-settings label {
 						display: inline-block;
-						width: 50px; /* Width for the labels */
+						width: 50px; /* Width for the labels. */
 						text-align: right;
 						margin-right: 5px;
 					}
 
 					.dwc-padding-settings input {
-						width: 60px; /* Width for the input fields */
+						width: 60px; /* Width for the input fields. */
 					}
 				</style>
 
 				<table class="form-table">
 					<tr>
-						<th>Badge Text</th>
+						<th><label for="badge_text">Badge Text</label></th>
 						<td>
-							<input type="text" name="dwc_ai_marker_settings[badge_text]"
+							<input type="text" id="badge_text" name="dwc_ai_marker_settings[badge_text]"
 									value="<?php echo esc_attr( $options['badge_text'] ); ?>"/>
 						</td>
 					</tr>
 					<tr>
-						<th>Hintergrundfarbe</th>
+						<th><label for="background_color">Hintergrundfarbe</label></th>
 						<td>
-							<input type="color" name="dwc_ai_marker_settings[background_color]"
+							<input type="color" id="background_color" name="dwc_ai_marker_settings[background_color]"
 									value="<?php echo esc_attr( $options['background_color'] ); ?>"/>
 						</td>
 					</tr>
 					<tr>
-						<th>Schriftart</th>
+						<th><label for="font_family">Schriftart</label></th>
 						<td>
-							<input type="text" name="dwc_ai_marker_settings[font_family]"
+							<input type="text" id="font_family" name="dwc_ai_marker_settings[font_family]"
 									value="<?php echo esc_attr( $options['font_family'] ); ?>"/>
 						</td>
 					</tr>
 					<tr>
-						<th>Transparenz</th>
+						<th><label for="opacity_range">Transparenz</label></th>
 						<td>
 							<input type="range" min="0" max="1" step="0.1" name="dwc_ai_marker_settings[opacity]"
 									id="opacity_range"
 									value="<?php echo esc_attr( $options['opacity'] ); ?>"/>
-							<input type="text" id="opacity_display"
-									value="<?php echo esc_attr( $options['opacity'] ); ?>" readonly size="3"/>
+							<label for="opacity_display"></label><input type="text" id="opacity_display"
+																		value="<?php echo esc_attr( $options['opacity'] ); ?>" readonly size="3"/>
 
 						</td>
 					</tr>
@@ -176,26 +175,26 @@ class Dwc_Ai_Marker_Admin {
 						<th>Randabstände</th>
 						<td class="dwc-padding-settings">
 							<label for="padding_top">Oben:</label>
-							<input type="number" name="dwc_ai_marker_settings[padding_top]"
+							<input type="number" id="padding_top" name="dwc_ai_marker_settings[padding_top]"
 									value="<?php echo esc_attr( $options['padding_top'] ); ?>"/> px
 							<br>
 							<label for="padding_right">Rechts:</label>
-							<input type="number" name="dwc_ai_marker_settings[padding_right]"
+							<input type="number" id="padding_right" name="dwc_ai_marker_settings[padding_right]"
 									value="<?php echo esc_attr( $options['padding_right'] ); ?>"/> px
 							<br>
 							<label for="padding_bottom">Unten:</label>
-							<input type="number" name="dwc_ai_marker_settings[padding_bottom]"
+							<input type="number" id="padding_bottom" name="dwc_ai_marker_settings[padding_bottom]"
 									value="<?php echo esc_attr( $options['padding_bottom'] ); ?>"/> px
 							<br>
 							<label for="padding_left">Links:</label>
-							<input type="number" name="dwc_ai_marker_settings[padding_left]"
+							<input type="number" id="padding_left" name="dwc_ai_marker_settings[padding_left]"
 									value="<?php echo esc_attr( $options['padding_left'] ); ?>"/> px
 						</td>
 					</tr>
 					<tr>
-						<th>Badge Position</th>
+						<th><label for="badge_position">Badge Position</label></th>
 						<td>
-							<select name="dwc_ai_marker_settings[position]">
+							<select id="badge_position" name="dwc_ai_marker_settings[position]">
 								<option value="top-left" <?php selected( isset( $options['position'] ) ? $options['position'] : 'top-left', 'top-left' ); ?>>
 									Oben Links
 								</option>
@@ -212,13 +211,11 @@ class Dwc_Ai_Marker_Admin {
 						</td>
 					</tr>
 					<tr>
-						<th>Debug-Modus</th>
+						<th><label for="debug_enabled">Debug-Modus</label></th>
 						<td>
-							<label>
-								<input type="checkbox" name="dwc_ai_marker_settings[debug_enabled]" value="1" 
-									<?php checked( isset( $options['debug_enabled'] ) ? $options['debug_enabled'] : false ); ?> />
-								Debug-Meldungen in der Browser-Konsole anzeigen
-							</label>
+							<input type="checkbox" id="debug_enabled" name="dwc_ai_marker_settings[debug_enabled]" value="1"
+								<?php checked( isset( $options['debug_enabled'] ) ? $options['debug_enabled'] : false ); ?> />
+							Debug-Meldungen in der Browser-Konsole anzeigen
 							<p class="description">
 								Aktivieren Sie diese Option, um detaillierte Debug-Informationen in der Browser-Konsole anzuzeigen.
 								Dies ist hilfreich zur Fehlersuche, sollte aber im Produktivbetrieb deaktiviert werden.
@@ -288,9 +285,9 @@ class Dwc_Ai_Marker_Admin {
 		if ( 'ai_generated' === $column_name ) {
 			$is_ai = get_post_meta( $post_id, '_is_ai_generated', true );
 			if ( $is_ai ) {
-				echo '<span style="font-size: 16px; display: inline-block; padding-left: 5px;" title="AI-generated image">🤖</span>';
+				echo '<span style="font-size: 16px; display: inline-block; padding-left: 5px;" title="' . esc_attr__( 'AI-generated image', 'dwc-ai-marker' ) . '">🤖</span>';
 			} else {
-				echo '<span style="color: #ccc; display: inline-block; padding-left: 5px;" title="Not an AI image">−</span>';
+				echo '<span style="color: #ccc; display: inline-block; padding-left: 5px;" title="' . esc_attr__( 'Not an AI image', 'dwc-ai-marker' ) . '">−</span>';
 			}
 		}
 	}
@@ -314,7 +311,7 @@ class Dwc_Ai_Marker_Admin {
 	 * @param WP_Query $query The current query.
 	 */
 	public function sort_columns( $query ) {
-		if ( ! is_admin() || ! $query->is_main_query() || $query->get( 'post_type' ) !== 'attachment' ) {
+		if ( ! is_admin() || ! $query->is_main_query() || 'attachment' !== $query->get( 'post_type' ) ) {
 			return;
 		}
 
@@ -353,6 +350,11 @@ class Dwc_Ai_Marker_Admin {
 			return $redirect_to;
 		}
 
+		// Prüfe den Nonce für die Sicherheit.
+		if ( ! isset( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( $_REQUEST['_wpnonce'] ), 'bulk-media' ) ) {
+			return $redirect_to;
+		}
+
 		$updated = 0;
 
 		foreach ( $post_ids as $post_id ) {
@@ -381,6 +383,11 @@ class Dwc_Ai_Marker_Admin {
 	 */
 	public function bulk_action_notices() {
 		if ( ! empty( $_REQUEST['bulk_ai_marker_updated'] ) && isset( $_REQUEST['bulk_action'] ) ) {
+			// Prüfe den Nonce für die Sicherheit.
+			if ( ! isset( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( $_REQUEST['_wpnonce'] ), 'bulk-media' ) ) {
+				return;
+			}
+
 			$updated = intval( wp_unslash( $_REQUEST['bulk_ai_marker_updated'] ) );
 			$action  = sanitize_text_field( wp_unslash( $_REQUEST['bulk_action'] ) );
 
@@ -433,14 +440,15 @@ class Dwc_Ai_Marker_Admin {
 		);
 
 		// Generate checkbox input.
-		$checkbox  = '<input type="checkbox" name="attachments[' . esc_attr( $post->ID ) . '][is_ai_generated]" value="1"';
+		$checkbox  = '<input type="checkbox" id="attachments-' . esc_attr( $post->ID ) . '-is_ai_generated" ';
+		$checkbox .= 'name="attachments[' . esc_attr( $post->ID ) . '][is_ai_generated]" value="1"';
 		$checkbox .= checked( $field_value, '1', false );
 		$checkbox .= '/>';
 
 		$form_fields['is_ai_generated'] = array(
 			'label' => __( 'KI-generiertes Bild', 'dwc-ai-marker' ),
 			'input' => 'html',
-			'html'  => $nonce_field . '<label>' . $checkbox . ' ' . esc_html__( 'Ja', 'dwc-ai-marker' ) . '</label>',
+			'html'  => $nonce_field . '<label for="attachments-' . esc_attr( $post->ID ) . '-is_ai_generated">' . $checkbox . ' ' . esc_html__( 'Ja', 'dwc-ai-marker' ) . '</label>',
 			'helps' => __( 'Mark this image as AI-generated (DALL-E, Adobe Firefly, Midjourney, etc.)', 'dwc-ai-marker' ),
 		);
 
@@ -475,4 +483,4 @@ class Dwc_Ai_Marker_Admin {
 
 		return $post;
 	}
-} 
+}
