@@ -36,6 +36,92 @@ class Dwc_Ai_Marker_Admin {
 		add_action( 'pre_get_posts', array( $this, 'sort_columns' ) );
 		// Hooks für Medienbibliothek.
 		add_action( 'init', array( $this, 'init_media_hooks' ) );
+		// AJAX-Handler für Token-Validierung.
+		add_action( 'wp_ajax_validate_github_token', array( $this, 'validate_github_token' ) );
+
+		// JavaScript-Variablen hinzufügen.
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+	}
+
+	/**
+	 * JavaScript für den Admin-Bereich laden
+	 */
+	public function enqueue_admin_scripts( $hook ) {
+		if ( 'settings_page_dwc-ai-marker' !== $hook ) {
+			return;
+		}
+
+		// WordPress-Admin-Script wird bereits geladen, wir fügen nur Lokalisierung hinzu.
+		wp_localize_script(
+			'jquery',
+			'dwc_ai_marker_vars',
+			array(
+				'nonce' => wp_create_nonce( 'dwc_ai_marker_token_validation' ),
+			)
+		);
+	}
+
+	/**
+	 * Validiert einen GitHub-Token via AJAX
+	 */
+	public function validate_github_token() {
+		// Sicherheitsprüfung.
+		if ( ! check_ajax_referer( 'dwc_ai_marker_token_validation', 'security', false ) ) {
+			wp_send_json_error( array( 'message' => 'Sicherheitscheck fehlgeschlagen.' ) );
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => 'Keine Berechtigung.' ) );
+		}
+
+		$token = isset( $_POST['token'] ) ? sanitize_text_field( wp_unslash( $_POST['token'] ) ) : '';
+
+		if ( empty( $token ) ) {
+			wp_send_json_error( array( 'message' => 'Kein Token angegeben.' ) );
+		}
+
+		// GitHub API Rate-Limit prüfen (minimaler Endpunkt).
+		$response = wp_remote_get(
+			'https://api.github.com/rate_limit',
+			array(
+				'headers' => array(
+					'Authorization' => 'token ' . $token,
+					'User-Agent'    => 'WordPress/' . get_bloginfo( 'version' ),
+				),
+				'timeout' => 10,
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( array( 'message' => 'Verbindungsfehler: ' . $response->get_error_message() ) );
+		}
+
+		$status = wp_remote_retrieve_response_code( $response );
+		$body   = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( 200 === $status ) {
+			// Token ist gültig, Limit-Informationen zurückgeben.
+			$rate_limit     = isset( $body['resources']['core']['limit'] ) ? $body['resources']['core']['limit'] : 'unbekannt';
+			$rate_remaining = isset( $body['resources']['core']['remaining'] ) ? $body['resources']['core']['remaining'] : 'unbekannt';
+
+			wp_send_json_success(
+				array(
+					'message'        => sprintf(
+						'Token gültig! API-Limit: %s, verbleibend: %s',
+						$rate_limit,
+						$rate_remaining
+					),
+					'rate_limit'     => $rate_limit,
+					'rate_remaining' => $rate_remaining,
+				)
+			);
+		} elseif ( 401 === $status ) {
+			wp_send_json_error( array( 'message' => 'Token ungültig oder abgelaufen.' ) );
+		} else {
+			// Andere Fehler.
+			$error_message = isset( $body['message'] ) ? $body['message'] : 'Unbekannter Fehler (Status ' . $status . ')';
+			wp_send_json_error( array( 'message' => 'API-Fehler: ' . $error_message ) );
+		}
 	}
 
 	/**
@@ -108,6 +194,9 @@ class Dwc_Ai_Marker_Admin {
 		$valid_positions       = array( 'top-left', 'top-right', 'bottom-left', 'bottom-right' );
 		$sanitized['position'] = in_array( $input['position'], $valid_positions, true ) ? $input['position'] : 'top-left';
 
+		// GitHub Token unverändert übernehmen.
+		$sanitized['github_token'] = isset( $input['github_token'] ) ? $input['github_token'] : '';
+
 		return $sanitized;
 	}
 
@@ -133,6 +222,10 @@ class Dwc_Ai_Marker_Admin {
 		// "v" am Anfang der Version entfernen, wenn vorhanden
 		$latest_version_clean = ltrim( $latest_version, 'v' );
 		$update_available     = $latest_version_clean && version_compare( $latest_version_clean, $current_version, '>' );
+		// Debug-Informationen abrufen für erweiterte Status-Anzeige.
+		$debug_info = json_decode( get_option( 'dwc_ai_marker_debug_info', '{}' ), true );
+		$api_status = isset( $debug_info['api_status'] ) ? $debug_info['api_status'] : '';
+		$api_error  = isset( $debug_info['api_error'] ) ? $debug_info['api_error'] : '';
 		?>
 		<div class="wrap">
 			<h1>DWC AI Image Marker Einstellungen</h1>
@@ -145,7 +238,12 @@ class Dwc_Ai_Marker_Admin {
 					<strong><?php echo esc_html( $current_version ); ?></strong>
 				</p>
 
-				<?php if ( $update_available ) : ?>
+				<?php if ( ! empty( $api_error ) ) : ?>
+					<p style="color:red">
+						<?php esc_html_e( 'API-Fehler beim Prüfen auf Updates:', 'dwc-ai-marker' ); ?>
+						<strong><?php echo esc_html( $api_error ); ?></strong>
+					</p>
+				<?php elseif ( $update_available ) : ?>
 					<p>
 						<?php esc_html_e( 'Neue Version verfügbar:', 'dwc-ai-marker' ); ?>
 						<strong><?php echo esc_html( $latest_version ); ?></strong>
@@ -157,6 +255,12 @@ class Dwc_Ai_Marker_Admin {
 					</form>
 				<?php else : ?>
 					<p><?php esc_html_e( 'Du verwendest die neueste Version.', 'dwc-ai-marker' ); ?></p>
+					<?php if ( $api_status ) : ?>
+						<p class="description">
+							<?php esc_html_e( 'Letzter API-Status:', 'dwc-ai-marker' ); ?>
+							<?php echo esc_html( $api_status ); ?>
+						</p>
+					<?php endif; ?>
 				<?php endif; ?>
 			</div>
 
@@ -248,6 +352,57 @@ class Dwc_Ai_Marker_Admin {
 						</td>
 					</tr>
 					<tr>
+						<th><label for="github_token">GitHub API Token</label></th>
+						<td>
+							<?php
+							// Options direkt aus der Datenbank abrufen.
+							$current_options = get_option( 'dwc_ai_marker_settings', array() );
+							$current_token   = isset( $current_options['github_token'] ) ? $current_options['github_token'] : '';
+							?>
+
+							<div style="display: flex; align-items: center;">
+								<input type="password" id="github_token" name="dwc_ai_marker_settings[github_token]"
+										value="<?php echo esc_attr( $current_token ); ?>" style="flex: 1;"/>
+								<button type="button" id="toggle_token_visibility" class="button"
+										style="margin-left: 5px;">
+									<span class="dashicons dashicons-visibility"></span>
+								</button>
+								<button type="button" id="validate_token" class="button button-secondary"
+										style="margin-left: 5px;">
+									Token prüfen
+								</button>
+							</div>
+
+							<div id="token_validation_result" style="margin-top: 5px; display: none;">
+								<span id="token_validation_icon" class="dashicons"></span>
+								<span id="token_validation_message"></span>
+							</div>
+
+							<?php if ( ! empty( $current_token ) ) : ?>
+								<div class="token-status" style="margin-top: 5px;">
+									<span class="dashicons dashicons-yes" style="color: green;"></span>
+									<span style="color: green; font-weight: bold;">Token konfiguriert</span>
+									<small style="margin-left: 5px; color: #666;">
+										(endet mit <?php echo esc_html( substr( $current_token, - 4 ) ); ?>)
+									</small>
+								</div>
+							<?php else : ?>
+								<div class="token-status" style="margin-top: 5px;">
+									<span class="dashicons dashicons-no" style="color: #d63638;"></span>
+									<span style="color: #d63638;">Kein Token konfiguriert</span>
+								</div>
+							<?php endif; ?>
+
+							<p class="description">
+								Persönlicher GitHub-Token für API-Zugriff. Erhöht das API-Limit von 60 auf 5000 Anfragen
+								pro Stunde und behebt 403-Fehler.
+								<a href="https://github.com/settings/tokens" target="_blank">Token erstellen</a> (nur
+								"public_repo" Berechtigung auswählen).
+							</p>
+						</td>
+					</tr>
+
+					<tr>
 						<th><label for="debug_enabled">Debug-Modus</label></th>
 						<td>
 							<input type="checkbox" id="debug_enabled" name="dwc_ai_marker_settings[debug_enabled]"
@@ -296,6 +451,108 @@ class Dwc_Ai_Marker_Admin {
 						opacityDisplay.value = opacityRange.value;
 					});
 				});
+				// GitHub Token Sichtbarkeit umschalten
+				document.addEventListener('DOMContentLoaded', function () {
+					const tokenField = document.getElementById('github_token');
+					const toggleButton = document.getElementById('toggle_token_visibility');
+
+					if (tokenField && toggleButton) {
+						toggleButton.addEventListener('click', function () {
+							if (tokenField.type === 'password') {
+								tokenField.type = 'text';
+								toggleButton.querySelector('.dashicons').classList.remove('dashicons-visibility');
+								toggleButton.querySelector('.dashicons').classList.add('dashicons-hidden');
+							} else {
+								tokenField.type = 'password';
+								toggleButton.querySelector('.dashicons').classList.remove('dashicons-hidden');
+								toggleButton.querySelector('.dashicons').classList.add('dashicons-visibility');
+							}
+						});
+					}
+				});
+				// GitHub Token Validierung
+				document.addEventListener('DOMContentLoaded', function () {
+					const tokenField = document.getElementById('github_token');
+					const toggleButton = document.getElementById('toggle_token_visibility');
+					const validateButton = document.getElementById('validate_token');
+					const resultDiv = document.getElementById('token_validation_result');
+					const resultIcon = document.getElementById('token_validation_icon');
+					const resultMessage = document.getElementById('token_validation_message');
+
+					// Toggle-Funktion
+					if (tokenField && toggleButton) {
+						toggleButton.addEventListener('click', function () {
+							if (tokenField.type === 'password') {
+								tokenField.type = 'text';
+								toggleButton.querySelector('.dashicons').classList.remove('dashicons-visibility');
+								toggleButton.querySelector('.dashicons').classList.add('dashicons-hidden');
+							} else {
+								tokenField.type = 'password';
+								toggleButton.querySelector('.dashicons').classList.remove('dashicons-hidden');
+								toggleButton.querySelector('.dashicons').classList.add('dashicons-visibility');
+							}
+						});
+					}
+
+					// Validierungs-Funktion
+					if (validateButton && tokenField) {
+						validateButton.addEventListener('click', function () {
+							const token = tokenField.value.trim();
+
+							if (!token) {
+								resultDiv.style.display = 'block';
+								resultIcon.className = 'dashicons dashicons-warning';
+								resultIcon.style.color = '#f0ad4e';
+								resultMessage.textContent = 'Bitte gib einen Token ein.';
+								resultMessage.style.color = '#f0ad4e';
+								return;
+							}
+
+							// Status während der Prüfung anzeigen
+							resultDiv.style.display = 'block';
+							resultIcon.className = 'dashicons dashicons-update';
+							resultIcon.style.color = '#007cba';
+							resultMessage.textContent = 'Token wird überprüft...';
+							resultMessage.style.color = '#007cba';
+							validateButton.disabled = true;
+
+							// AJAX-Request für die Validierung
+							const data = new FormData();
+							data.append('action', 'validate_github_token');
+							data.append('token', token);
+							data.append('security', dwc_ai_marker_vars.nonce);
+
+							fetch(ajaxurl, {
+								method: 'POST',
+								credentials: 'same-origin',
+								body: data
+							})
+								.then(response => response.json())
+								.then(data => {
+									if (data.success) {
+										resultIcon.className = 'dashicons dashicons-yes';
+										resultIcon.style.color = 'green';
+										resultMessage.textContent = data.data.message;
+										resultMessage.style.color = 'green';
+									} else {
+										resultIcon.className = 'dashicons dashicons-no';
+										resultIcon.style.color = '#d63638';
+										resultMessage.textContent = data.data.message;
+										resultMessage.style.color = '#d63638';
+									}
+									validateButton.disabled = false;
+								})
+								.catch(error => {
+									resultIcon.className = 'dashicons dashicons-no';
+									resultIcon.style.color = '#d63638';
+									resultMessage.textContent = 'Fehler bei der Überprüfung: ' + error.message;
+									resultMessage.style.color = '#d63638';
+									validateButton.disabled = false;
+								});
+						});
+					}
+				});
+
 			</script>
 		</div>
 		<?php

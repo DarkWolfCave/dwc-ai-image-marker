@@ -3,7 +3,7 @@
 **Plugin Name:** DWC AI Image Marker  
 **Plugin URI:** [https://darkwolfcave.de](https://darkwolfcave.de)  
 **Description:** Automatisches Markieren von KI-generierten Bildern mit einem Badge in WordPress.  
-**Version:** 1.2.2  
+**Version:** 1.2.3
 **Author:** DarkWolfCave.de  
 **License:** GPL v2 or later
 

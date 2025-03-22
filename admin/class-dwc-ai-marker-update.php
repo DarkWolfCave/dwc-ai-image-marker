@@ -48,9 +48,7 @@ class Dwc_Ai_Marker_Update {
 
 			return;
 		}
-
 		error_log( 'DWC AI Marker: Versuche Update auf Version ' . $latest_version );
-
 		$zip_url = self::$github_repo . '/archive/refs/tags/' . $latest_version . '.zip';
 		error_log( 'DWC AI Marker: Download-URL: ' . $zip_url );
 
@@ -83,7 +81,7 @@ class Dwc_Ai_Marker_Update {
 		$plugin_dir  = WP_PLUGIN_DIR . '/dwc-ai-image-marker';
 		$extract_dir = WP_PLUGIN_DIR . '/dwc-ai-image-marker-update';
 
-		// Verzeichnis leeren
+		// Verzeichnis leeren.
 		if ( file_exists( $extract_dir ) ) {
 			$wp_filesystem->delete( $extract_dir, true );
 		}
@@ -107,11 +105,11 @@ class Dwc_Ai_Marker_Update {
 			return;
 		}
 
-		// Durchsuche das gesamte Archiv nach der dwc-ai-marker.php Datei
+		// Durchsuche das gesamte Archiv nach der dwc-ai-marker.php Datei.
 		$plugin_file_found = false;
 		$plugin_file_dir   = '';
 
-		// Rekursive Funktion zum Durchsuchen von Verzeichnissen
+		// Rekursive Funktion zum Durchsuchen von Verzeichnissen.
 		function find_plugin_file( $dir ) {
 			$files = glob( $dir . '/*' );
 			foreach ( $files as $file ) {
@@ -129,11 +127,11 @@ class Dwc_Ai_Marker_Update {
 			return false;
 		}
 
-		// Suche nach der Hauptdatei
+		// Suche nach der Hauptdatei.
 		$plugin_file_dir = find_plugin_file( $extract_dir );
 
 		if ( ! $plugin_file_dir ) {
-			// Versuche auch andere mögliche Dateinamen
+			// Versuche auch andere mögliche Dateinamen.
 			function find_any_plugin_file( $dir ) {
 				$files = glob( $dir . '/*.php' );
 				foreach ( $files as $file ) {
@@ -157,7 +155,7 @@ class Dwc_Ai_Marker_Update {
 			$plugin_file_dir = find_any_plugin_file( $extract_dir );
 		}
 
-		// Liste alle gefundenen PHP-Dateien im entpackten Archiv auf (für Debugging)
+		// Liste alle gefundenen PHP-Dateien im entpackten Archiv auf (für Debugging).
 		$all_php_files = array();
 		function list_all_php_files( $dir, &$results ) {
 			$files = glob( $dir . '/*.php' );
@@ -174,14 +172,14 @@ class Dwc_Ai_Marker_Update {
 		list_all_php_files( $extract_dir, $all_php_files );
 		error_log( 'DWC AI Marker: Gefundene PHP-Dateien: ' . print_r( $all_php_files, true ) );
 
-		// Zeige Verzeichnisstruktur
+		// Zeige Verzeichnisstruktur.
 		function list_dir_structure( $dir, $level = 0 ) {
 			$files     = scandir( $dir );
 			$structure = '';
 			$indent    = str_repeat( '  ', $level );
 
 			foreach ( $files as $file ) {
-				if ( $file == '.' || $file == '..' ) {
+				if ( '.' === $file || '..' === $file ) {
 					continue;
 				}
 				$path       = $dir . '/' . $file;
@@ -211,7 +209,7 @@ class Dwc_Ai_Marker_Update {
 
 		error_log( 'DWC AI Marker: Plugin-Verzeichnis gefunden: ' . $plugin_file_dir );
 
-		// Altes Plugin löschen und neues verschieben
+		// Altes Plugin löschen und neues verschieben.
 		error_log( 'DWC AI Marker: Lösche altes Plugin-Verzeichnis: ' . $plugin_dir );
 		$wp_filesystem->delete( $plugin_dir, true );
 
@@ -230,7 +228,7 @@ class Dwc_Ai_Marker_Update {
 			return;
 		}
 
-		// Bereinigen
+		// Bereinigen.
 		$wp_filesystem->delete( $extract_dir, true );
 
 		add_action(
@@ -240,7 +238,33 @@ class Dwc_Ai_Marker_Update {
 			}
 		);
 
-		// Plugin deaktivieren damit es neu aktiviert werden kann
+		// Plugin deaktivieren damit es neu aktiviert werden kann.
 		deactivate_plugins( plugin_basename( DWC_AI_MARKER_PLUGIN_DIR . 'dwc-ai-marker.php' ) );
+		// Kurze Pause für saubere Deaktivierung.
+		sleep( 5 );
+
+		// Plugin wieder aktivieren.
+		$result = activate_plugin( DWC_AI_MARKER_PLUGIN_BASENAME );
+
+		if ( is_wp_error( $result ) ) {
+			// Bei Aktivierungsproblem entsprechende Meldung anzeigen.
+			add_action(
+				'admin_notices',
+				function () use ( $result ) {
+					echo '<div class="updated"><p>' .
+						esc_html__( 'Update erfolgreich! Das Plugin konnte nicht automatisch aktiviert werden: ', 'dwc-ai-marker' ) .
+						esc_html( $result->get_error_message() ) .
+						'</p></div>';
+				}
+			);
+		} else {
+			// Erfolgreiche Aktivierung.
+			add_action(
+				'admin_notices',
+				function () {
+					echo '<div class="updated"><p>' . esc_html__( 'Update erfolgreich! Das Plugin wurde automatisch aktiviert.', 'dwc-ai-marker' ) . '</p></div>';
+				}
+			);
+		}
 	}
 }

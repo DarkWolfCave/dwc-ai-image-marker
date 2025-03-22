@@ -5,6 +5,25 @@
 Alle signifikanten Änderungen in diesem Projekt werden in diesem Dokument festgehalten.
 The English version can be found below.
 
+## [1.2.3] - 22-03-2025
+
+### Verbessert
+
+- Update-Mechanismus verbessert, um GitHub-Veröffentlichungen mit "v"-Präfix im Tag-Namen korrekt zu erkennen
+- Debug-Informationen erweitert mit detaillierten API-Status- und Fehlerinformationen
+- Fehlerbehandlung beim GitHub API-Zugriff verbessert
+
+### Hinzugefügt
+
+- GitHub Personal Access Token Unterstützung für zuverlässigere Update-Prüfungen
+- Token-Validierungsfunktion mit Anzeige der API-Limits
+- API-Fehlerhinweise in den Einstellungen, die Benutzern bei der Fehlerbehandlung helfen
+
+### Behoben
+
+- 403 Forbidden-Fehler beim Zugriff auf die GitHub API durch Implementierung der Token-Authentifizierung
+- Versionserkennung behoben, wenn Tags mit "v" beginnen (z.B. "v1.2.3")
+
 ## [1.2.2] - 21.03.2025
 
 ### Hinzugefügt
@@ -146,6 +165,25 @@ The English version can be found below.
 ---
 
 ## English
+
+## [1.2.3] - 22.03.2025
+
+### Improved
+
+- Enhanced update mechanism to correctly recognize GitHub releases with "v" prefix in tag names
+- Extended debug information with detailed API status and error information
+- Improved error handling when accessing GitHub API
+
+### Added
+
+- GitHub Personal Access Token support for more reliable update checks
+- Token validation function with API limit display
+- API error notifications in settings to help users with troubleshooting
+
+### Fixed
+
+- 403 Forbidden errors when accessing the GitHub API by implementing token authentication
+- Version detection when tags start with "v" (e.g., "v1.2.3")
 
 ## [1.2.2] - 21.03.2025
 
