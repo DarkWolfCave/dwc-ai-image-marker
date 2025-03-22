@@ -451,25 +451,6 @@ class Dwc_Ai_Marker_Admin {
 						opacityDisplay.value = opacityRange.value;
 					});
 				});
-				// GitHub Token Sichtbarkeit umschalten
-				document.addEventListener('DOMContentLoaded', function () {
-					const tokenField = document.getElementById('github_token');
-					const toggleButton = document.getElementById('toggle_token_visibility');
-
-					if (tokenField && toggleButton) {
-						toggleButton.addEventListener('click', function () {
-							if (tokenField.type === 'password') {
-								tokenField.type = 'text';
-								toggleButton.querySelector('.dashicons').classList.remove('dashicons-visibility');
-								toggleButton.querySelector('.dashicons').classList.add('dashicons-hidden');
-							} else {
-								tokenField.type = 'password';
-								toggleButton.querySelector('.dashicons').classList.remove('dashicons-hidden');
-								toggleButton.querySelector('.dashicons').classList.add('dashicons-visibility');
-							}
-						});
-					}
-				});
 				// GitHub Token Validierung
 				document.addEventListener('DOMContentLoaded', function () {
 					const tokenField = document.getElementById('github_token');
