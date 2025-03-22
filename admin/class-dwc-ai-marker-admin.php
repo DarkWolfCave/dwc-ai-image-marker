@@ -87,10 +87,9 @@ class Dwc_Ai_Marker_Admin {
 	 *
 	 * @param array $input The settings input.
 	 *
+	 * @return array Sanitized settings.
 	 * @since 1.1.0
 	 * @updated 1.2.0 Unterstützung für debug_enabled hinzugefügt.
-	 *
-	 * @return array Sanitized settings.
 	 */
 	public function sanitize_settings( $input ) {
 		$sanitized               = array();
@@ -117,12 +116,50 @@ class Dwc_Ai_Marker_Admin {
 	 *
 	 * @since 1.1.0
 	 * @updated 1.2.0 Debug-Modus-Einstellung hinzugefügt.
+	 * @updated 1.2.2 Update-Informationen hinzugefügt.
 	 */
 	public function settings_page() {
 		$options = dwc_ai_marker()->get_options();
+
+		// Überprüfe, ob das Update durchgeführt werden soll.
+		if ( isset( $_POST['dwc_ai_update_plugin'] ) && check_admin_referer( 'dwc_ai_update_plugin_nonce' ) ) {
+			Dwc_Ai_Marker_Update::update_plugin();
+		}
+
+		// Aktuelle und neueste Version abrufen.
+		$current_version = DWC_AI_MARKER_VERSION;
+		$latest_version  = get_option( 'dwc_ai_marker_latest_version', '' );
+		// $update_available = $latest_version && version_compare( $latest_version, $current_version, '>' );
+		// "v" am Anfang der Version entfernen, wenn vorhanden
+		$latest_version_clean = ltrim( $latest_version, 'v' );
+		$update_available     = $latest_version_clean && version_compare( $latest_version_clean, $current_version, '>' );
 		?>
 		<div class="wrap">
 			<h1>DWC AI Image Marker Einstellungen</h1>
+
+			<!-- Update-Bereich -->
+			<div class="card">
+				<h2><?php esc_html_e( 'Plugin-Version', 'dwc-ai-marker' ); ?></h2>
+				<p>
+					<?php esc_html_e( 'Installierte Version:', 'dwc-ai-marker' ); ?>
+					<strong><?php echo esc_html( $current_version ); ?></strong>
+				</p>
+
+				<?php if ( $update_available ) : ?>
+					<p>
+						<?php esc_html_e( 'Neue Version verfügbar:', 'dwc-ai-marker' ); ?>
+						<strong><?php echo esc_html( $latest_version ); ?></strong>
+					</p>
+					<form method="post">
+						<?php wp_nonce_field( 'dwc_ai_update_plugin_nonce' ); ?>
+						<input type="submit" name="dwc_ai_update_plugin" class="button button-primary"
+								value="<?php esc_attr_e( 'Jetzt aktualisieren', 'dwc-ai-marker' ); ?>">
+					</form>
+				<?php else : ?>
+					<p><?php esc_html_e( 'Du verwendest die neueste Version.', 'dwc-ai-marker' ); ?></p>
+				<?php endif; ?>
+			</div>
+
 			<form method="post" action="options.php">
 				<?php settings_fields( 'dwc_ai_marker_settings_group' ); ?>
 				<style>
@@ -166,8 +203,8 @@ class Dwc_Ai_Marker_Admin {
 							<input type="range" min="0" max="1" step="0.1" name="dwc_ai_marker_settings[opacity]"
 									id="opacity_range"
 									value="<?php echo esc_attr( $options['opacity'] ); ?>"/>
-							<label for="opacity_display"></label><input type="text" id="opacity_display"
-																		value="<?php echo esc_attr( $options['opacity'] ); ?>" readonly size="3"/>
+							<input type="text" id="opacity_display"
+									value="<?php echo esc_attr( $options['opacity'] ); ?>" readonly size="3"/>
 
 						</td>
 					</tr>
@@ -213,11 +250,13 @@ class Dwc_Ai_Marker_Admin {
 					<tr>
 						<th><label for="debug_enabled">Debug-Modus</label></th>
 						<td>
-							<input type="checkbox" id="debug_enabled" name="dwc_ai_marker_settings[debug_enabled]" value="1"
+							<input type="checkbox" id="debug_enabled" name="dwc_ai_marker_settings[debug_enabled]"
+									value="1"
 								<?php checked( isset( $options['debug_enabled'] ) ? $options['debug_enabled'] : false ); ?> />
 							Debug-Meldungen in der Browser-Konsole anzeigen
 							<p class="description">
-								Aktivieren Sie diese Option, um detaillierte Debug-Informationen in der Browser-Konsole anzuzeigen.
+								Aktivieren Sie diese Option, um detaillierte Debug-Informationen in der Browser-Konsole
+								anzuzeigen.
 								Dies ist hilfreich zur Fehlersuche, sollte aber im Produktivbetrieb deaktiviert werden.
 							</p>
 						</td>
