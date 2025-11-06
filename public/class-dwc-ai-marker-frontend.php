@@ -53,6 +53,9 @@ class Dwc_Ai_Marker_Frontend {
 
 		// Zusätzliche Filter für benutzerdefinierte Loops.
 		add_filter( 'wp_get_attachment_image_attributes', array( $this, 'maybe_add_ai_image_class' ), 99, 3 );
+
+		// Elementor-spezifische Filter.
+		add_action( 'init', array( $this, 'init_elementor_hooks' ) );
 	}
 
 	/**
@@ -75,6 +78,24 @@ class Dwc_Ai_Marker_Frontend {
 			2
 		);
 		add_filter( 'render_block_generateblocks/image', array( $this, 'process_generate_blocks_image' ), 10, 2 );
+	}
+
+	/**
+	 * Initialisiert Elementor-spezifische Hooks.
+	 *
+	 * @return void
+	 */
+	public function init_elementor_hooks() {
+		// Prüfe, ob Elementor aktiv ist.
+		if ( ! defined( 'ELEMENTOR_VERSION' ) ) {
+			return;
+		}
+
+		// Filter für Elementor Widget Content - mit späterer Priorität, damit Elementor fertig gerendert hat.
+		add_filter( 'elementor/widget/render_content', array( $this, 'process_elementor_widget_content' ), 99, 2 );
+
+		// Filter für Elementor Frontend Output.
+		add_action( 'elementor/frontend/after_render', array( $this, 'process_elementor_section' ), 10, 1 );
 	}
 
 	/**
@@ -140,6 +161,24 @@ class Dwc_Ai_Marker_Frontend {
 		$css .= '.DWC_AI_Image_Marker .ai-image-badge {';
 		$css .= 'top: 30px !important;'; // Etwas tiefer.
 		$css .= 'left: 20px !important;'; // Etwas mehr nach rechts.
+		$css .= '}';
+
+		// Elementor-spezifische Anpassungen.
+		$css .= '.elementor-widget-container .ai-image-wrapper {';
+		$css .= 'position: relative !important;';
+		$css .= 'display: inline-block !important;';
+		$css .= '}';
+
+		$css .= '.elementor-element .ai-image-badge {';
+		$css .= 'position: absolute !important;';
+		$css .= 'z-index: 999 !important;';
+		$css .= 'display: block !important;';
+		$css .= 'visibility: visible !important;';
+		$css .= '}';
+
+		// Stelle sicher, dass Container mit Hintergrundbildern relative Position haben.
+		$css .= '.elementor-element[style*="background-image"] {';
+		$css .= 'position: relative !important;';
 		$css .= '}';
 
 		// Adjust hover effect based on position.
@@ -661,5 +700,62 @@ class Dwc_Ai_Marker_Frontend {
 		}
 
 		return $attr;
+	}
+
+	/**
+	 * Verarbeitet Elementor Widget Content.
+	 *
+	 * @param string $widget_content Der Widget-Content.
+	 * @param object $widget Das Widget-Objekt.
+	 *
+	 * @return string Modifizierter Widget-Content.
+	 */
+	public function process_elementor_widget_content( $widget_content, $widget ) {
+		// Nur für Image-Widgets verarbeiten.
+		if ( 'image' !== $widget->get_name() ) {
+			return $widget_content;
+		}
+
+		// Schnelle Prüfung, ob bereits verarbeitet.
+		if ( false !== strpos( $widget_content, 'ai-image-badge' ) ) {
+			return $widget_content;
+		}
+
+		// Versuche, die Bild-ID aus den Widget-Einstellungen zu erhalten.
+		$settings = $widget->get_settings_for_display();
+		$image_id = isset( $settings['image']['id'] ) ? intval( $settings['image']['id'] ) : 0;
+
+		// Wenn keine ID in den Einstellungen, versuche aus dem HTML zu extrahieren.
+		if ( 0 === $image_id ) {
+			$image_id = dwc_ai_marker()->utils->extract_image_id_from_tag( $widget_content );
+		}
+
+		// Überprüfe, ob das Bild KI-generiert ist.
+		if ( $image_id > 0 && dwc_ai_marker()->utils->is_ai_generated( $image_id ) ) {
+			$options    = dwc_ai_marker()->get_options();
+			$badge_text = isset( $options['badge_text'] ) ? $options['badge_text'] : 'KI-generiert';
+
+			// Prüfe, ob das Bild bereits in einem Wrapper ist.
+			if ( false === strpos( $widget_content, 'ai-image-wrapper' ) ) {
+				// Finde das img-Tag und umschließe es.
+				$pattern     = '/(<img[^>]+>)/i';
+				$replacement = '<div class="ai-image-wrapper"><div class="ai-image-badge">' . esc_html( $badge_text ) . '</div>$1</div>';
+				$widget_content = preg_replace( $pattern, $replacement, $widget_content, 1 );
+			}
+		}
+
+		return $widget_content;
+	}
+
+	/**
+	 * Verarbeitet Elementor Section nach dem Rendern.
+	 *
+	 * @param object $element Das Element-Objekt.
+	 *
+	 * @return void
+	 */
+	public function process_elementor_section( $element ) {
+		// Diese Methode wird für zukünftige Erweiterungen verwendet.
+		// Aktuell wird die Verarbeitung über JavaScript durchgeführt.
 	}
 }
