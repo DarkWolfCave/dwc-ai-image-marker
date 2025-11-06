@@ -3,5 +3,9 @@
 # Test-Dateien (nicht committen)
 test-elementor.html
 test-elementor-php.php
+test-github-api.php
+test-github-api.py
+test-wp-api.php
+reset-cache.php
 message.txt
 TESTING.md
