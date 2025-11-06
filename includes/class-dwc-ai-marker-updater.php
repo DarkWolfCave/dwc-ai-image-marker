@@ -131,8 +131,8 @@ class Dwc_Ai_Marker_Updater {
 			
 			$debug_info['api_error'] = 'HTTP ' . $http_code . ': ' . $error_message;
 
-			// Cache auch bei Fehler, um wiederholte Anfragen zu vermeiden.
-			set_transient( 'dwc_ai_marker_update_check', time(), 3 * HOUR_IN_SECONDS );
+			// Cache bei Fehler nur 15 Minuten (nicht 3 Stunden), damit User schneller retry kann.
+			set_transient( 'dwc_ai_marker_update_check', time(), 15 * MINUTE_IN_SECONDS );
 			update_option( 'dwc_ai_marker_debug_info', wp_json_encode( $debug_info ) );
 
 			// Debug-Benachrichtigung anzeigen, wenn Debug-Modus aktiv

@@ -27,6 +27,7 @@ class Dwc_Ai_Marker_Admin {
 		// Admin-Hooks.
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		add_action( 'admin_action_dwc_clear_update_cache', array( $this, 'clear_update_cache' ) );
 		add_filter( 'bulk_actions-upload', array( $this, 'add_bulk_actions' ) );
 		add_filter( 'handle_bulk_actions-upload', array( $this, 'handle_bulk_actions' ), 10, 3 );
 		add_action( 'admin_notices', array( $this, 'bulk_action_notices' ) );
@@ -122,6 +123,37 @@ class Dwc_Ai_Marker_Admin {
 			$error_message = isset( $body['message'] ) ? $body['message'] : 'Unbekannter Fehler (Status ' . $status . ')';
 			wp_send_json_error( array( 'message' => 'API-Fehler: ' . $error_message ) );
 		}
+	}
+
+	/**
+	 * Löscht den Update-Check-Cache (für "Erneut prüfen"-Button).
+	 */
+	public function clear_update_cache() {
+		// Sicherheitsprüfung.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Keine Berechtigung.', 'dwc-ai-marker' ) );
+		}
+
+		// Nonce prüfen.
+		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'dwc_clear_update_cache' ) ) {
+			wp_die( esc_html__( 'Sicherheitsprüfung fehlgeschlagen.', 'dwc-ai-marker' ) );
+		}
+
+		// Cache löschen.
+		delete_transient( 'dwc_ai_marker_update_check' );
+		delete_option( 'dwc_ai_marker_debug_info' );
+
+		// Zurück zur Einstellungsseite mit Erfolgs-Meldung.
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'          => 'dwc-ai-marker',
+					'cache_cleared' => '1',
+				),
+				admin_url( 'options-general.php' )
+			)
+		);
+		exit;
 	}
 
 	/**
@@ -230,6 +262,12 @@ class Dwc_Ai_Marker_Admin {
 		<div class="wrap">
 			<h1>DWC AI Image Marker Einstellungen</h1>
 
+			<?php if ( isset( $_GET['cache_cleared'] ) && '1' === $_GET['cache_cleared'] ) : ?>
+				<div class="notice notice-success is-dismissible">
+					<p><?php esc_html_e( 'Update-Cache wurde gelöscht. Die Prüfung läuft beim nächsten Seitenaufruf automatisch.', 'dwc-ai-marker' ); ?></p>
+				</div>
+			<?php endif; ?>
+
 			<!-- Update-Bereich -->
 			<div class="card">
 				<h2><?php esc_html_e( 'Plugin-Version', 'dwc-ai-marker' ); ?></h2>
@@ -239,10 +277,37 @@ class Dwc_Ai_Marker_Admin {
 				</p>
 
 				<?php if ( ! empty( $api_error ) ) : ?>
-					<p style="color:red">
-						<?php esc_html_e( 'API-Fehler beim Prüfen auf Updates:', 'dwc-ai-marker' ); ?>
-						<strong><?php echo esc_html( $api_error ); ?></strong>
-					</p>
+					<div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin: 10px 0;">
+						<p style="margin: 0 0 10px 0;">
+							<strong><?php esc_html_e( 'Update-Prüfung fehlgeschlagen', 'dwc-ai-marker' ); ?></strong>
+						</p>
+						<p style="margin: 0 0 10px 0; font-size: 13px;">
+							<?php
+							printf(
+								/* translators: %s = Fehlermeldung */
+								esc_html__( 'Fehler: %s', 'dwc-ai-marker' ),
+								'<code>' . esc_html( $api_error ) . '</code>'
+							);
+							?>
+						</p>
+						<p style="margin: 0 0 10px 0; font-size: 13px;">
+							<?php esc_html_e( 'Mögliche Ursachen:', 'dwc-ai-marker' ); ?>
+						</p>
+						<ul style="margin: 0 0 10px 20px; font-size: 13px;">
+							<li><?php esc_html_e( 'GitHub API ist vorübergehend nicht erreichbar', 'dwc-ai-marker' ); ?></li>
+							<li><?php esc_html_e( 'GitHub Token ist ungültig oder abgelaufen (falls konfiguriert)', 'dwc-ai-marker' ); ?></li>
+							<li><?php esc_html_e( 'Netzwerkprobleme auf dem Server', 'dwc-ai-marker' ); ?></li>
+						</ul>
+						<p style="margin: 0;">
+							<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?action=dwc_clear_update_cache' ), 'dwc_clear_update_cache' ) ); ?>" 
+							   class="button button-secondary">
+								<?php esc_html_e( 'Erneut prüfen', 'dwc-ai-marker' ); ?>
+							</a>
+							<span style="margin-left: 10px; font-size: 13px; color: #666;">
+								<?php esc_html_e( '(Automatische Wiederholung in 15 Minuten)', 'dwc-ai-marker' ); ?>
+							</span>
+						</p>
+					</div>
 				<?php elseif ( $update_available ) : ?>
 					<p>
 						<?php esc_html_e( 'Neue Version verfügbar:', 'dwc-ai-marker' ); ?>
