@@ -588,13 +588,21 @@ class Dwc_Ai_Marker_Background {
 					});
 
 					// Verarbeite normale Bilder (img-Tags)
-					const allImages = document.querySelectorAll('img:not(.DWC_AI_Image_Marker *):not(.elementor-widget-image .elementor-widget-container *)');
+					// WICHTIG: Elementor-Widgets werden bereits oben verarbeitet, daher hier ausschließen
+					// um Duplikate zu vermeiden. Aber nur wenn sie bereits ein Badge haben.
+					const allImages = document.querySelectorAll('img:not(.DWC_AI_Image_Marker *)');
 					debug(`Gefundene Bilder: ${allImages.length}`);
 
 					allImages.forEach(function (img) {
 						// Prüfe, ob bereits verarbeitet oder Limit erreicht
 						if (processedCount >= maxToProcess) return;
 						if (processedElements.has(img)) return;
+
+						// Überspringe Elementor-Widget-Bilder, die bereits verarbeitet wurden
+						const widgetContainer = img.closest('.elementor-widget-image .elementor-widget-container');
+						if (widgetContainer && widgetContainer.querySelector('.ai-image-badge')) {
+							return; // Bereits verarbeitet
+						}
 
 						// Überprüfe, ob der Elternteil bereits ein Badge hat oder ein Wrapper ist
 						const parent = img.parentElement;
