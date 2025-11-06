@@ -43,8 +43,8 @@ class Dwc_Ai_Marker_Update {
 			set_transient( 'dwc_ai_marker_update_message', array(
 				'type' => 'error',
 				'message' => __( 'Keine neue Version verfügbar.', 'dwc-ai-marker' )
-			), 30 );
-			
+			), 300 );
+
 			// Redirect zur Einstellungsseite
 			wp_safe_redirect( admin_url( 'options-general.php?page=dwc-ai-marker' ) );
 			exit;
@@ -63,7 +63,7 @@ class Dwc_Ai_Marker_Update {
 			set_transient( 'dwc_ai_marker_update_message', array(
 				'type' => 'error',
 				'message' => __( 'Download fehlgeschlagen!', 'dwc-ai-marker' ) . ' Fehler: ' . $error_message
-			), 30 );
+			), 300 );
 			
 			// Redirect zur Einstellungsseite
 			wp_safe_redirect( admin_url( 'options-general.php?page=dwc-ai-marker' ) );
@@ -201,7 +201,7 @@ class Dwc_Ai_Marker_Update {
 			set_transient( 'dwc_ai_marker_update_message', array(
 				'type' => 'error',
 				'message' => __( 'Plugin-Hauptdatei nicht gefunden im entpackten Archiv!', 'dwc-ai-marker' )
-			), 30 );
+			), 300 );
 			
 			// Redirect zur Einstellungsseite
 			wp_safe_redirect( admin_url( 'options-general.php?page=dwc-ai-marker' ) );
@@ -224,7 +224,7 @@ class Dwc_Ai_Marker_Update {
 			set_transient( 'dwc_ai_marker_update_message', array(
 				'type' => 'error',
 				'message' => __( 'Fehler beim Verschieben des neuen Plugins!', 'dwc-ai-marker' )
-			), 30 );
+			), 300 );
 			
 			// Redirect zur Einstellungsseite
 			wp_safe_redirect( admin_url( 'options-general.php?page=dwc-ai-marker' ) );
@@ -238,7 +238,7 @@ class Dwc_Ai_Marker_Update {
 		set_transient( 'dwc_ai_marker_update_message', array(
 			'type' => 'success',
 			'message' => __( 'Update erfolgreich! Plugin wurde auf Version ', 'dwc-ai-marker' ) . $latest_version . __( ' aktualisiert.', 'dwc-ai-marker' )
-		), 30 );
+		), 300 );
 
 		// Plugin deaktivieren damit es neu aktiviert werden kann.
 		deactivate_plugins( plugin_basename( DWC_AI_MARKER_PLUGIN_DIR . 'dwc-ai-marker.php' ) );
@@ -253,7 +253,7 @@ class Dwc_Ai_Marker_Update {
 			set_transient( 'dwc_ai_marker_update_message', array(
 				'type' => 'warning',
 				'message' => __( 'Update erfolgreich! Bitte aktiviere das Plugin manuell.', 'dwc-ai-marker' ) . ' ' . $result->get_error_message()
-			), 30 );
+			), 300 );
 		}
 		
 		// Redirect zur Einstellungsseite

@@ -340,11 +340,15 @@ class Dwc_Ai_Marker_Admin {
 						<?php esc_html_e( 'Neue Version verfügbar:', 'dwc-ai-marker' ); ?>
 						<strong><?php echo esc_html( $latest_version ); ?></strong>
 					</p>
-					<form method="post">
+					<form method="post" style="display: inline-block; margin-right: 10px;">
 						<?php wp_nonce_field( 'dwc_ai_update_plugin_nonce' ); ?>
 						<input type="submit" name="dwc_ai_update_plugin" class="button button-primary"
 								value="<?php esc_attr_e( 'Jetzt aktualisieren', 'dwc-ai-marker' ); ?>">
 					</form>
+					<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?action=dwc_clear_update_cache' ), 'dwc_clear_update_cache' ) ); ?>"
+					   class="button button-secondary">
+						<?php esc_html_e( 'Erneut prüfen', 'dwc-ai-marker' ); ?>
+					</a>
 				<?php else : ?>
 					<p><?php esc_html_e( 'Du verwendest die neueste Version.', 'dwc-ai-marker' ); ?></p>
 					<?php if ( $api_status ) : ?>
@@ -353,6 +357,12 @@ class Dwc_Ai_Marker_Admin {
 							<?php echo esc_html( $api_status ); ?>
 						</p>
 					<?php endif; ?>
+					<p>
+						<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?action=dwc_clear_update_cache' ), 'dwc_clear_update_cache' ) ); ?>"
+						   class="button button-secondary">
+							<?php esc_html_e( 'Erneut prüfen', 'dwc-ai-marker' ); ?>
+						</a>
+					</p>
 				<?php endif; ?>
 			</div>
 
