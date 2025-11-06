@@ -107,7 +107,12 @@ class Dwc_Ai_Marker_Updater {
 			// HTTP-Status erneut prüfen.
 			$http_code = wp_remote_retrieve_response_code( $response );
 			if ( ! empty( $http_code ) ) {
-				$debug_info['api_status'] = $http_code . ' (nach Fallback)';
+				$debug_info['api_status'] = $http_code . ' (nach Fallback auf token)';
+			}
+			
+			// Wenn Fallback erfolgreich: Cache löschen, damit beim nächsten Mal direkt 'token' verwendet wird.
+			if ( 200 === $http_code ) {
+				delete_transient( 'dwc_ai_marker_update_check' );
 			}
 		}
 
