@@ -85,7 +85,7 @@ class Dwc_Ai_Marker_Admin {
 			'https://api.github.com/rate_limit',
 			array(
 				'headers' => array(
-					'Authorization' => 'token ' . $token,
+					'Authorization' => 'Bearer ' . $token,
 					'User-Agent'    => 'WordPress/' . get_bloginfo( 'version' ),
 				),
 				'timeout' => 10,

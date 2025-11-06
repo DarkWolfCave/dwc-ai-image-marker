@@ -54,7 +54,9 @@ class Dwc_Ai_Marker_Updater {
 		);
 
 		if ( ! empty( $github_token ) ) {
-			$headers['Authorization'] = 'token ' . $github_token;
+			// GitHub unterstützt sowohl 'token' (classic) als auch 'Bearer' (fine-grained).
+			// 'Bearer' funktioniert für beide Token-Typen.
+			$headers['Authorization'] = 'Bearer ' . $github_token;
 		}
 
 		$response = wp_remote_get(
