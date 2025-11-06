@@ -74,7 +74,7 @@ class Dwc_Ai_Marker_Admin {
 			wp_send_json_error( array( 'message' => 'Keine Berechtigung.' ) );
 		}
 
-		$token = isset( $_POST['token'] ) ? sanitize_text_field( wp_unslash( $_POST['token'] ) ) : '';
+		$token = isset( $_POST['token'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['token'] ) ) ) : '';
 
 		if ( empty( $token ) ) {
 			wp_send_json_error( array( 'message' => 'Kein Token angegeben.' ) );

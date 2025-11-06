@@ -30,7 +30,7 @@ class Dwc_Ai_Marker_Updater {
 		// Aktualisierung nur alle 12 Stunden prüfen, um API-Limits zu respektieren.
 		// delete_transient( 'dwc_ai_marker_update_check' );
 		$options      = get_option( 'dwc_ai_marker_settings', array() );
-		$github_token = ! empty( $options['github_token'] ) ? $options['github_token'] : '';
+		$github_token = ! empty( $options['github_token'] ) ? trim( $options['github_token'] ) : '';
 
 		$last_check = get_transient( 'dwc_ai_marker_update_check' );
 		if ( false !== $last_check ) {
@@ -54,8 +54,8 @@ class Dwc_Ai_Marker_Updater {
 		);
 
 		if ( ! empty( $github_token ) ) {
-			// GitHub unterstützt sowohl 'token' (classic) als auch 'Bearer' (fine-grained).
-			// 'Bearer' funktioniert für beide Token-Typen.
+			// GitHub Classic Tokens benötigen 'token', Fine-grained Tokens benötigen 'Bearer'.
+			// Versuche zuerst 'Bearer' (funktioniert für beide), bei 401-Fehler Fallback auf 'token'.
 			$headers['Authorization'] = 'Bearer ' . $github_token;
 		}
 
@@ -92,10 +92,39 @@ class Dwc_Ai_Marker_Updater {
 			$debug_info['api_status'] = $http_code;
 		}
 
+		// Bei 401-Fehler mit Bearer: Versuche Fallback auf 'token' für Classic Tokens.
+		if ( 401 === $http_code && ! empty( $github_token ) && isset( $headers['Authorization'] ) && strpos( $headers['Authorization'], 'Bearer' ) === 0 ) {
+			// Fallback: Versuche Classic Token Format.
+			$headers['Authorization'] = 'token ' . $github_token;
+			$response                 = wp_remote_get(
+				self::$github_api_url,
+				array(
+					'timeout' => 10,
+					'headers' => $headers,
+				)
+			);
+
+			// HTTP-Status erneut prüfen.
+			$http_code = wp_remote_retrieve_response_code( $response );
+			if ( ! empty( $http_code ) ) {
+				$debug_info['api_status'] = $http_code . ' (nach Fallback)';
+			}
+		}
+
 		if ( 200 !== $http_code ) {
 			// HTTP-Fehler (404, 403, etc.).
-			$debug_info['api_error'] = 'HTTP ' . $http_code . ': ' .
-										wp_remote_retrieve_response_message( $response );
+			$response_body = wp_remote_retrieve_body( $response );
+			$error_message = wp_remote_retrieve_response_message( $response );
+			
+			// Versuche Fehlermeldung aus JSON-Body zu extrahieren.
+			if ( ! empty( $response_body ) ) {
+				$error_body = json_decode( $response_body, true );
+				if ( isset( $error_body['message'] ) ) {
+					$error_message = $error_body['message'];
+				}
+			}
+			
+			$debug_info['api_error'] = 'HTTP ' . $http_code . ': ' . $error_message;
 
 			// Cache auch bei Fehler, um wiederholte Anfragen zu vermeiden.
 			set_transient( 'dwc_ai_marker_update_check', time(), 3 * HOUR_IN_SECONDS );
