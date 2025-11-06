@@ -3,7 +3,7 @@
  * Plugin Name: DWC AI Image Marker
  * Plugin URI: https://github.com/DarkWolfCave/dwc-ai-image-marker
  * Description: Automatically marks AI-generated images with a badge and centrally manages them in WordPress.
- * Version: 1.2.4.3
+ * Version: 1.2.4.4
  * Author: DarkWolfCave.de
  * Author URI: https://darkwolfcave.de
  * License: GPL v2 or later
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin-Pfade definieren.
-const DWC_AI_MARKER_VERSION = '1.2.4.3';
+const DWC_AI_MARKER_VERSION = '1.2.4.4';
 define( 'DWC_AI_MARKER_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DWC_AI_MARKER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'DWC_AI_MARKER_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );

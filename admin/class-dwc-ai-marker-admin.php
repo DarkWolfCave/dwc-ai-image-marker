@@ -258,6 +258,11 @@ class Dwc_Ai_Marker_Admin {
 		$debug_info = json_decode( get_option( 'dwc_ai_marker_debug_info', '{}' ), true );
 		$api_status = isset( $debug_info['api_status'] ) ? $debug_info['api_status'] : '';
 		$api_error  = isset( $debug_info['api_error'] ) ? $debug_info['api_error'] : '';
+		// Prüfe, ob eine Update-Meldung vorhanden ist
+		$update_message = get_transient( 'dwc_ai_marker_update_message' );
+		if ( $update_message ) {
+			delete_transient( 'dwc_ai_marker_update_message' );
+		}
 		?>
 		<div class="wrap">
 			<h1>DWC AI Image Marker Einstellungen</h1>
@@ -265,6 +270,28 @@ class Dwc_Ai_Marker_Admin {
 			<?php if ( isset( $_GET['cache_cleared'] ) && '1' === $_GET['cache_cleared'] ) : ?>
 				<div class="notice notice-success is-dismissible">
 					<p><?php esc_html_e( 'Update-Cache wurde gelöscht. Die Prüfung läuft beim nächsten Seitenaufruf automatisch.', 'dwc-ai-marker' ); ?></p>
+				</div>
+			<?php endif; ?>
+
+			<?php if ( $update_message ) : ?>
+				<?php
+				$notice_class = 'notice ';
+				switch ( $update_message['type'] ) {
+					case 'success':
+						$notice_class .= 'notice-success';
+						break;
+					case 'error':
+						$notice_class .= 'notice-error';
+						break;
+					case 'warning':
+						$notice_class .= 'notice-warning';
+						break;
+					default:
+						$notice_class .= 'notice-info';
+				}
+				?>
+				<div class="<?php echo esc_attr( $notice_class ); ?> is-dismissible">
+					<p><?php echo esc_html( $update_message['message'] ); ?></p>
 				</div>
 			<?php endif; ?>
 

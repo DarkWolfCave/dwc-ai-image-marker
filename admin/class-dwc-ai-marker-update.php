@@ -39,14 +39,15 @@ class Dwc_Ai_Marker_Update {
 		$latest_version = get_option( 'dwc_ai_marker_latest_version', '' );
 
 		if ( empty( $latest_version ) ) {
-			add_action(
-				'admin_notices',
-				function () {
-					echo '<div class="error"><p>' . esc_html__( 'Keine neue Version verfügbar.', 'dwc-ai-marker' ) . '</p></div>';
-				}
-			);
-
-			return;
+			// Fehlermeldung in Transient speichern statt admin_notices
+			set_transient( 'dwc_ai_marker_update_message', array(
+				'type' => 'error',
+				'message' => __( 'Keine neue Version verfügbar.', 'dwc-ai-marker' )
+			), 30 );
+			
+			// Redirect zur Einstellungsseite
+			wp_safe_redirect( admin_url( 'options-general.php?page=dwc-ai-marker' ) );
+			exit;
 		}
 		error_log( 'DWC AI Marker: Versuche Update auf Version ' . $latest_version );
 		$zip_url = self::$github_repo . '/archive/refs/tags/' . $latest_version . '.zip';
@@ -58,17 +59,15 @@ class Dwc_Ai_Marker_Update {
 			$error_message = $tmp_file->get_error_message();
 			error_log( 'DWC AI Marker: Download fehlgeschlagen - ' . $error_message );
 
-			add_action(
-				'admin_notices',
-				function () use ( $error_message ) {
-					echo '<div class="error"><p>' .
-						esc_html__( 'Download fehlgeschlagen!', 'dwc-ai-marker' ) .
-						' Fehler: ' . esc_html( $error_message ) .
-						'</p></div>';
-				}
-			);
-
-			return;
+			// Fehlermeldung in Transient speichern
+			set_transient( 'dwc_ai_marker_update_message', array(
+				'type' => 'error',
+				'message' => __( 'Download fehlgeschlagen!', 'dwc-ai-marker' ) . ' Fehler: ' . $error_message
+			), 30 );
+			
+			// Redirect zur Einstellungsseite
+			wp_safe_redirect( admin_url( 'options-general.php?page=dwc-ai-marker' ) );
+			exit;
 		}
 
 		global $wp_filesystem;
@@ -197,14 +196,16 @@ class Dwc_Ai_Marker_Update {
 
 		if ( ! $plugin_file_dir ) {
 			error_log( 'DWC AI Marker: Plugin-Hauptdatei nicht gefunden!' );
-			add_action(
-				'admin_notices',
-				function () {
-					echo '<div class="error"><p>' . esc_html__( 'Plugin-Hauptdatei nicht gefunden im entpackten Archiv!', 'dwc-ai-marker' ) . '</p></div>';
-				}
-			);
-
-			return;
+			
+			// Fehlermeldung in Transient speichern
+			set_transient( 'dwc_ai_marker_update_message', array(
+				'type' => 'error',
+				'message' => __( 'Plugin-Hauptdatei nicht gefunden im entpackten Archiv!', 'dwc-ai-marker' )
+			), 30 );
+			
+			// Redirect zur Einstellungsseite
+			wp_safe_redirect( admin_url( 'options-general.php?page=dwc-ai-marker' ) );
+			exit;
 		}
 
 		error_log( 'DWC AI Marker: Plugin-Verzeichnis gefunden: ' . $plugin_file_dir );
@@ -218,53 +219,45 @@ class Dwc_Ai_Marker_Update {
 
 		if ( ! $move_result ) {
 			error_log( 'DWC AI Marker: Fehler beim Verschieben des Verzeichnisses' );
-			add_action(
-				'admin_notices',
-				function () {
-					echo '<div class="error"><p>' . esc_html__( 'Fehler beim Verschieben des neuen Plugins!', 'dwc-ai-marker' ) . '</p></div>';
-				}
-			);
-
-			return;
+			
+			// Fehlermeldung in Transient speichern
+			set_transient( 'dwc_ai_marker_update_message', array(
+				'type' => 'error',
+				'message' => __( 'Fehler beim Verschieben des neuen Plugins!', 'dwc-ai-marker' )
+			), 30 );
+			
+			// Redirect zur Einstellungsseite
+			wp_safe_redirect( admin_url( 'options-general.php?page=dwc-ai-marker' ) );
+			exit;
 		}
 
 		// Bereinigen.
 		$wp_filesystem->delete( $extract_dir, true );
 
-		add_action(
-			'admin_notices',
-			function () {
-				echo '<div class="updated"><p>' . esc_html__( 'Update erfolgreich! Bitte aktiviere das Plugin neu.', 'dwc-ai-marker' ) . '</p></div>';
-			}
-		);
+		// Erfolgsmeldung in Transient speichern
+		set_transient( 'dwc_ai_marker_update_message', array(
+			'type' => 'success',
+			'message' => __( 'Update erfolgreich! Plugin wurde auf Version ', 'dwc-ai-marker' ) . $latest_version . __( ' aktualisiert.', 'dwc-ai-marker' )
+		), 30 );
 
 		// Plugin deaktivieren damit es neu aktiviert werden kann.
 		deactivate_plugins( plugin_basename( DWC_AI_MARKER_PLUGIN_DIR . 'dwc-ai-marker.php' ) );
-		// Kurze Pause für saubere Deaktivierung.
-		sleep( 5 );
-
+		
 		// Plugin wieder aktivieren.
 		$result = activate_plugin( DWC_AI_MARKER_PLUGIN_BASENAME );
 
 		if ( is_wp_error( $result ) ) {
-			// Bei Aktivierungsproblem entsprechende Meldung anzeigen.
-			add_action(
-				'admin_notices',
-				function () use ( $result ) {
-					echo '<div class="updated"><p>' .
-						esc_html__( 'Update erfolgreich! Das Plugin konnte nicht automatisch aktiviert werden: ', 'dwc-ai-marker' ) .
-						esc_html( $result->get_error_message() ) .
-						'</p></div>';
-				}
-			);
-		} else {
-			// Erfolgreiche Aktivierung.
-			add_action(
-				'admin_notices',
-				function () {
-					echo '<div class="updated"><p>' . esc_html__( 'Update erfolgreich! Das Plugin wurde automatisch aktiviert.', 'dwc-ai-marker' ) . '</p></div>';
-				}
-			);
+			error_log( 'DWC AI Marker: Aktivierungsfehler - ' . $result->get_error_message() );
+			
+			// Aktualisiere Meldung mit Aktivierungsproblem
+			set_transient( 'dwc_ai_marker_update_message', array(
+				'type' => 'warning',
+				'message' => __( 'Update erfolgreich! Bitte aktiviere das Plugin manuell.', 'dwc-ai-marker' ) . ' ' . $result->get_error_message()
+			), 30 );
 		}
+		
+		// Redirect zur Einstellungsseite
+		wp_safe_redirect( admin_url( 'options-general.php?page=dwc-ai-marker' ) );
+		exit;
 	}
 }
