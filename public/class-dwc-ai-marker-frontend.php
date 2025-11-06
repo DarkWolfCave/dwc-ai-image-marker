@@ -174,7 +174,6 @@ class Dwc_Ai_Marker_Frontend {
 		$css .= 'z-index: 999 !important;';
 		$css .= 'display: block !important;';
 		$css .= 'visibility: visible !important;';
-		$css .= 'opacity: 1 !important;';
 		$css .= '}';
 
 		// Stelle sicher, dass Container mit Hintergrundbildern relative Position haben.
