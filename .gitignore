@@ -1,1 +1,7 @@
 .idea/
+
+# Test-Dateien (nicht committen)
+test-elementor.html
+test-elementor-php.php
+message.txt
+TESTING.md

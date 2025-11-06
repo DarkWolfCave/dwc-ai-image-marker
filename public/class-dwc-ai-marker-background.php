@@ -279,10 +279,17 @@ class Dwc_Ai_Marker_Background {
 						}
 
 						// 3. Methode: WordPress Standard-Attachments haben oft Größenangaben im Dateinamen
-						// z.B. image-123-300x200.jpg
+						// z.B. image-123-300x200.jpg oder sina-78-746x1024.jpg
 						const sizeMatch = filename.match(/[-_](\d+)-\d+x\d+\./);
 						if (sizeMatch && sizeMatch[1] && aiImageLookup[sizeMatch[1]]) {
 							debug(`KI-Bild durch Größen-ID erkannt: ${sizeMatch[1]}`);
+							return true;
+						}
+
+						// 3.1. Methode: Entferne Größenangaben und prüfe Basis-Dateinamen
+						const baseFilenameNoSize = filename.replace(/-\d+x\d+\.(jpe?g|png|gif|webp)$/, '.$1');
+						if (baseFilenameNoSize !== filename && aiFilePathMap[baseFilenameNoSize]) {
+							debug(`KI-Bild durch Basis-Dateinamen (ohne Größe) erkannt: ${baseFilenameNoSize}`);
 							return true;
 						}
 
@@ -292,6 +299,13 @@ class Dwc_Ai_Marker_Background {
 							const relativePath = cleanUrl.substring(wpContentPos + 18); // "/wp-content/uploads/".length
 							if (aiFilePathMap[relativePath]) {
 								debug(`KI-Bild durch relativen Pfad erkannt: ${relativePath}`);
+								return true;
+							}
+
+							// 4.1. Prüfe auch Basis-Dateinamen im relativen Pfad
+							const relativeBaseFilename = relativePath.replace(/-\d+x\d+\.(jpe?g|png|gif|webp)$/, '.$1');
+							if (relativeBaseFilename !== relativePath && aiFilePathMap[relativeBaseFilename]) {
+								debug(`KI-Bild durch relativen Basis-Pfad erkannt: ${relativeBaseFilename}`);
 								return true;
 							}
 						}
@@ -494,8 +508,87 @@ class Dwc_Ai_Marker_Background {
 						}
 					});
 
+					// ELEMENTOR-SPEZIFISCHE VERARBEITUNG
+					// Elementor-Widget-Container verarbeiten
+					const elementorImageWidgets = document.querySelectorAll('.elementor-widget-image .elementor-widget-container');
+					debug(`Gefundene Elementor Image Widgets: ${elementorImageWidgets.length}`);
+
+					elementorImageWidgets.forEach(function (widgetContainer) {
+						if (processedCount >= maxToProcess) return;
+						if (processedElements.has(widgetContainer)) return;
+
+						// Prüfe, ob bereits ein Badge vorhanden ist
+						if (widgetContainer.querySelector('.ai-image-badge')) {
+							return;
+						}
+
+						// Suche nach img-Tags innerhalb des Widget-Containers
+						const images = widgetContainer.querySelectorAll('img');
+						images.forEach(function (img) {
+							if (processedCount >= maxToProcess) return;
+							if (processedElements.has(img)) return;
+
+							const parent = img.parentElement;
+							if (parent && (parent.classList.contains('ai-image-wrapper') || parent.querySelector('.ai-image-badge'))) {
+								return;
+							}
+
+							const src = img.getAttribute('src');
+							if (checkImageId(src)) {
+								debug(`KI-Bild in Elementor Widget erkannt: ${src}`);
+								wrapImageWithBadge(img);
+								processedCount++;
+								processedElements.add(img);
+							}
+						});
+					});
+
+					// Elementor-Container mit Hintergrundbildern verarbeiten
+					const elementorContainers = document.querySelectorAll('.elementor-element[style*="background-image"], .elementor-element[style*="--background"]');
+					debug(`Gefundene Elementor Container mit Hintergrundbildern: ${elementorContainers.length}`);
+
+					elementorContainers.forEach(function (container) {
+						if (processedCount >= maxToProcess) return;
+						if (processedElements.has(container)) return;
+
+						// Prüfe, ob bereits ein Badge vorhanden ist
+						if (container.querySelector('.ai-image-badge')) {
+							return;
+						}
+
+						const style = window.getComputedStyle(container);
+						const inlineStyle = container.getAttribute('style') || '';
+						const props = ['--background-image', '--background-url', 'background-image'];
+
+						for (const prop of props) {
+							let bgValue = style.getPropertyValue(prop);
+
+							if (!bgValue && inlineStyle) {
+								const match = inlineStyle.match(new RegExp(prop + '\\s*:\\s*url\\([\'"]?(.*?)[\'"]?\\)'));
+								if (match && match[1]) {
+									bgValue = 'url(' + match[1] + ')';
+								}
+							}
+
+							if (!bgValue) continue;
+
+							const urlMatch = bgValue.match(/url\(['"]?(.*?)['"]?\)/);
+							if (!urlMatch || !urlMatch[1]) continue;
+
+							const imageUrl = urlMatch[1];
+
+							if (checkImageId(imageUrl)) {
+								debug(`KI-Hintergrundbild in Elementor Container erkannt: ${imageUrl}`);
+								addBadgeToElement(container);
+								processedCount++;
+								processedElements.add(container);
+								break;
+							}
+						}
+					});
+
 					// Verarbeite normale Bilder (img-Tags)
-					const allImages = document.querySelectorAll('img:not(.DWC_AI_Image_Marker *)');
+					const allImages = document.querySelectorAll('img:not(.DWC_AI_Image_Marker *):not(.elementor-widget-image .elementor-widget-container *)');
 					debug(`Gefundene Bilder: ${allImages.length}`);
 
 					allImages.forEach(function (img) {
