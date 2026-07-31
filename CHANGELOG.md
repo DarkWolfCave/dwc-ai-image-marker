@@ -5,6 +5,58 @@
 Alle signifikanten Änderungen in diesem Projekt werden in diesem Dokument festgehalten.
 The English version can be found below.
 
+## [1.2.4.4] - 06.11.2025
+
+### Hinzugefügt
+
+- Button zum erneuten Prüfen auf Updates in den Plugin-Einstellungen
+
+### Verbessert
+
+- Der Update-Vorgang zeigt seinen Status jetzt über Transients an, statt stumm zu laufen
+
+## [1.2.4.3] - 06.11.2025
+
+### Verbessert
+
+- Aussagekräftigere Fehlermeldungen und Rückmeldungen bei Problemen mit der GitHub-API
+
+## [1.2.4.2] - 06.11.2025
+
+### Behoben
+
+- Leerzeichen in eingetragenen GitHub-Tokens werden entfernt
+- Fallback auf das `token`-Format für klassische GitHub-Tokens, wenn `Bearer` nicht akzeptiert wird
+
+### Verbessert
+
+- Der Cache wird geleert, sobald der Token-Fallback erfolgreich war
+
+## [1.2.4.1] - 06.11.2025
+
+### Behoben
+
+- Authentifizierung gegen die GitHub-API nutzt jetzt `Bearer` statt `token`
+
+## [1.2.4] - 06.11.2025
+
+### Hinzugefügt
+
+- Unterstützung für Elementor: serverseitiger Filter für das Elementor-Bild-Widget
+  (`elementor/widget/render_content`) sowie Erkennung von Elementor-Widgets und
+  Elementor-Containern mit Hintergrundbildern im Frontend-JavaScript
+
+### Behoben
+
+- Überschreiben der Transparenz im Elementor-CSS entfernt, damit die eigenen
+  Einstellungen wieder greifen
+
+## [1.2.3.1] - 22.03.2025
+
+### Behoben
+
+- Doppelten JavaScript-Eintrag entfernt
+
 ## [1.2.3] - 22-03-2025
 
 ### Verbessert
@@ -165,6 +217,57 @@ The English version can be found below.
 ---
 
 ## English
+
+## [1.2.4.4] - 06.11.2025
+
+### Added
+
+- Button to re-check for updates in the plugin settings
+
+### Improved
+
+- The update process now reports its status via transients instead of running silently
+
+## [1.2.4.3] - 06.11.2025
+
+### Improved
+
+- More meaningful error messages and user feedback for GitHub API problems
+
+## [1.2.4.2] - 06.11.2025
+
+### Fixed
+
+- Whitespace in configured GitHub tokens is now trimmed
+- Fallback to the `token` format for classic GitHub tokens when `Bearer` is rejected
+
+### Improved
+
+- The cache is cleared as soon as the token fallback succeeds
+
+## [1.2.4.1] - 06.11.2025
+
+### Fixed
+
+- GitHub API authentication now uses `Bearer` instead of `token`
+
+## [1.2.4] - 06.11.2025
+
+### Added
+
+- Elementor support: server-side filter for the Elementor image widget
+  (`elementor/widget/render_content`) plus detection of Elementor widgets and
+  Elementor containers with background images in the frontend JavaScript
+
+### Fixed
+
+- Removed the opacity override in the Elementor CSS so user settings apply again
+
+## [1.2.3.1] - 22.03.2025
+
+### Fixed
+
+- Removed a duplicate JavaScript entry
 
 ## [1.2.3] - 22.03.2025
 
