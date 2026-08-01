@@ -5,6 +5,28 @@
 Alle signifikanten Änderungen in diesem Projekt werden in diesem Dokument festgehalten.
 The English version can be found below.
 
+## [1.2.5] - 01.08.2026
+
+### Behoben
+
+- **Bildgröße bei aktivem Badge**: Der Wrapper um markierte Bilder erhielt eine feste
+  Pixelbreite, die einmalig beim Seitenaufbau gemessen wurde. Dadurch schrumpfte das Bild
+  bei schmalerem Fenster nicht mehr mit und lief aus seiner Spalte heraus. Der Wrapper
+  bekommt jetzt nur noch den für das Badge nötigen Positionierungsrahmen.
+- **Zu breiter Wrapper im CSS**: `width: max-content` entsprach bei einem Bild dessen
+  intrinsischer Breite und sprengte ebenfalls schmalere Spalten. Ersetzt durch
+  `max-width: 100%`.
+- **Veralteter Cache nach Änderung der Markierung**: Die Liste der markierten Bilder lag
+  bis zu 24 Stunden in einem Transient, der beim Setzen oder Entfernen des KI-Häkchens nicht
+  verworfen wurde. Neu markierte Bilder blieben dadurch unsichtbar, entfernte weiterhin
+  markiert. Der Cache wird jetzt bei jeder Änderung von `_is_ai_generated` verworfen —
+  über `added_`, `updated_` und `deleted_post_meta`, womit sowohl die Checkbox im
+  Medien-Dialog als auch die Bulk-Aktionen abgedeckt sind.
+
+### Geändert
+
+- Cache-Keys als Klassenkonstanten, damit Lesen und Verwerfen nicht auseinanderlaufen
+
 ## [1.2.4.4] - 06.11.2025
 
 ### Hinzugefügt
@@ -217,6 +239,26 @@ The English version can be found below.
 ---
 
 ## English
+
+## [1.2.5] - 01.08.2026
+
+### Fixed
+
+- **Image size with an active badge**: the wrapper around marked images received a fixed
+  pixel width, measured once during page load. As a result the image no longer scaled down
+  on narrower viewports and overflowed its column. The wrapper now only provides the
+  positioning context the badge needs.
+- **Overly wide wrapper in CSS**: `width: max-content` resolves to an image's intrinsic
+  width and broke narrow columns as well. Replaced with `max-width: 100%`.
+- **Stale cache after changing a marking**: the list of marked images lived in a transient
+  for up to 24 hours that was never invalidated when the AI checkbox changed. Newly marked
+  images stayed invisible while unmarked ones remained active. The cache is now flushed on
+  every change to `_is_ai_generated` via `added_`, `updated_` and `deleted_post_meta`,
+  covering both the media dialog checkbox and the bulk actions.
+
+### Changed
+
+- Cache keys are now class constants so reading and flushing cannot drift apart
 
 ## [1.2.4.4] - 06.11.2025
 
