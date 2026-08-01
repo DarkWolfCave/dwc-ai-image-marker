@@ -5,6 +5,18 @@
 Alle signifikanten Änderungen in diesem Projekt werden in diesem Dokument festgehalten.
 The English version can be found below.
 
+## [1.2.5.1] - 01.08.2026
+
+### Behoben
+
+- **Zwischengespeicherte Daten aus der Vorversion**: Die mit 1.2.5 eingeführte
+  Cache-Invalidierung greift erst, wenn sich eine Markierung ändert. Ein Transient
+  aus einer älteren Version blieb dadurch nach dem Update zunächst bestehen und lieferte
+  bis zu 24 Stunden einen veralteten Stand. Der Cache wird jetzt zusätzlich bei der
+  Plugin-Aktivierung und einmalig nach jedem Versionswechsel verworfen — Letzteres ist
+  nötig, weil ein Update über die Update-Funktion nur Dateien austauscht und den
+  Aktivierungshook nicht auslöst.
+
 ## [1.2.5] - 01.08.2026
 
 ### Behoben
@@ -239,6 +251,17 @@ The English version can be found below.
 ---
 
 ## English
+
+## [1.2.5.1] - 01.08.2026
+
+### Fixed
+
+- **Cached data left over from a previous version**: the cache invalidation introduced in
+  1.2.5 only fires when a marking changes. A transient from an older version therefore
+  survived the update and kept serving a stale state for up to 24 hours. The cache is now
+  additionally flushed on plugin activation and once after every version change — the
+  latter is required because updating through the update function only swaps files and
+  never triggers the activation hook.
 
 ## [1.2.5] - 01.08.2026
 

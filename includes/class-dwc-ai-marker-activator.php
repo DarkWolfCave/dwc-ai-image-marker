@@ -46,6 +46,13 @@ class Dwc_Ai_Marker_Activator {
 				)
 			);
 		}
+
+		// Zwischengespeicherte Bilddaten verwerfen. Beim Neuinstallieren oder
+		// Reaktivieren kann ein Transient aus einer älteren Version zurückbleiben,
+		// der bis zu 24 Stunden einen veralteten Stand ausliefert.
+		if ( class_exists( 'Dwc_Ai_Marker_Background' ) ) {
+			Dwc_Ai_Marker_Background::flush_cache();
+		}
 	}
 
 	/**

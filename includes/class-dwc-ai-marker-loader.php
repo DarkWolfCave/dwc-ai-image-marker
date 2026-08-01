@@ -20,6 +20,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Dwc_Ai_Marker_Loader {
 	/**
+	 * Option, in der die zuletzt geladene Plugin-Version steht.
+	 *
+	 * Dient dem Erkennen eines Versionswechsels, siehe maybe_upgrade().
+	 *
+	 * @var string
+	 */
+	const VERSION_OPTION = 'dwc_ai_marker_installed_version';
+
+	/**
 	 * Plugin-Instanz
 	 *
 	 * @var Dwc_Ai_Marker_Loader|null
@@ -97,6 +106,32 @@ class Dwc_Ai_Marker_Loader {
 
 		// CSS-Datei verschieben.
 		add_action( 'admin_init', array( $this, 'move_css_file' ) );
+
+		// Nach einem Versionswechsel einmalig aufräumen.
+		add_action( 'init', array( $this, 'maybe_upgrade' ) );
+	}
+
+	/**
+	 * Führt einmalige Aufräumarbeiten nach einem Versionswechsel aus.
+	 *
+	 * Ein Update über die Update-Funktion tauscht nur Dateien: der
+	 * Aktivierungshook feuert dabei nicht, und zwischengespeicherte Bilddaten aus
+	 * der Vorversion bleiben in der Datenbank zurück. Der Abgleich der zuletzt
+	 * gesehenen Version holt das nach.
+	 *
+	 * @return void
+	 * @since 1.2.5.1
+	 */
+	public function maybe_upgrade() {
+		$stored = get_option( self::VERSION_OPTION, '' );
+
+		if ( DWC_AI_MARKER_VERSION === $stored ) {
+			return;
+		}
+
+		Dwc_Ai_Marker_Background::flush_cache();
+
+		update_option( self::VERSION_OPTION, DWC_AI_MARKER_VERSION );
 	}
 
 	/**
