@@ -21,11 +21,78 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Dwc_Ai_Marker_Background {
 
 	/**
+	 * Cache-Gruppe für den Objekt-Cache.
+	 *
+	 * @var string
+	 */
+	const CACHE_GROUP = 'dwc_ai_marker';
+
+	/**
+	 * Cache-Key für die Anzahl markierter Bilder.
+	 *
+	 * @var string
+	 */
+	const CACHE_KEY_COUNT = 'dwc_ai_marker_count';
+
+	/**
+	 * Cache-Key für die Liste der markierten Bild-IDs.
+	 *
+	 * @var string
+	 */
+	const CACHE_KEY_IDS = 'dwc_ai_marker_image_ids';
+
+	/**
+	 * Cache-Key für die Attachment-Daten der markierten Bilder.
+	 *
+	 * @var string
+	 */
+	const CACHE_KEY_ATTACHMENTS = 'dwc_ai_marker_attachments';
+
+	/**
 	 * Initialisiert die Hintergrundverarbeitung.
 	 */
 	public function __construct() {
 		// Footer-Hook für JavaScript-Anpassungen.
 		add_action( 'wp_footer', array( $this, 'add_dynamic_background_handler' ), 99 );
+
+		// Cache verwerfen, sobald sich die KI-Markierung eines Bildes ändert.
+		// Ohne das behält der Transient bis zu 24 Stunden den alten Stand: neue
+		// Markierungen bleiben unsichtbar, entfernte greifen weiterhin.
+		add_action( 'added_post_meta', array( $this, 'maybe_flush_cache' ), 10, 3 );
+		add_action( 'updated_post_meta', array( $this, 'maybe_flush_cache' ), 10, 3 );
+		add_action( 'deleted_post_meta', array( $this, 'maybe_flush_cache' ), 10, 3 );
+	}
+
+	/**
+	 * Verwirft den Cache, wenn das geänderte Meta-Feld die KI-Markierung ist.
+	 *
+	 * Hängt an added_/updated_/deleted_post_meta und deckt damit sowohl die
+	 * Checkbox im Medien-Dialog als auch die Bulk-Aktionen ab.
+	 *
+	 * @param int|array $meta_id   Meta-ID beziehungsweise -IDs (vom Hook vorgegeben, ungenutzt).
+	 * @param int       $object_id Post-ID (vom Hook vorgegeben, ungenutzt).
+	 * @param string    $meta_key  Name des geänderten Meta-Feldes.
+	 * @return void
+	 */
+	public function maybe_flush_cache( $meta_id, $object_id, $meta_key ) {
+		if ( '_is_ai_generated' !== $meta_key ) {
+			return;
+		}
+
+		self::flush_cache();
+	}
+
+	/**
+	 * Verwirft sämtliche zwischengespeicherten Bilddaten.
+	 *
+	 * @return void
+	 */
+	public static function flush_cache() {
+		delete_transient( self::CACHE_KEY_IDS );
+
+		wp_cache_delete( self::CACHE_KEY_COUNT, self::CACHE_GROUP );
+		wp_cache_delete( self::CACHE_KEY_IDS, self::CACHE_GROUP );
+		wp_cache_delete( self::CACHE_KEY_ATTACHMENTS, self::CACHE_GROUP );
 	}
 
 	/**
@@ -34,10 +101,11 @@ class Dwc_Ai_Marker_Background {
 	 * @return array Die vorbereiteten Bilddaten oder leeres Array, wenn keine Daten vorhanden.
 	 */
 	private function prepare_image_data() {
-		// Cache-Keys definieren.
-		$count_cache_key       = 'dwc_ai_marker_count';
-		$ids_cache_key         = 'dwc_ai_marker_image_ids';
-		$attachments_cache_key = 'dwc_ai_marker_attachments';
+		// Cache-Keys aus den Klassenkonstanten, damit Lesen und Verwerfen
+		// nicht auseinanderlaufen können.
+		$count_cache_key       = self::CACHE_KEY_COUNT;
+		$ids_cache_key         = self::CACHE_KEY_IDS;
+		$attachments_cache_key = self::CACHE_KEY_ATTACHMENTS;
 
 		// 1. Schnellprüfung, ob überhaupt KI-Bilder im System sind - mit Objekt-Cache.
 		$count = wp_cache_get( $count_cache_key, 'dwc_ai_marker' );
@@ -716,9 +784,11 @@ class Dwc_Ai_Marker_Background {
 						wrapper.style.display = 'inline-block';
 					}
 
-					// Anpassung der Breite, wenn das Elternelement vorhanden ist
+					// Der Wrapper braucht nur einen Positionierungsrahmen fuer das Badge.
+					// Eine feste Pixelbreite darf hier NICHT gesetzt werden: sie friert die
+					// zum Messzeitpunkt gueltige Breite ein, das Bild schrumpft danach nicht
+					// mehr mit und laeuft bei schmalerem Viewport aus seiner Spalte heraus.
 					if (parent) {
-						wrapper.style.width = img.offsetWidth > 0 ? img.offsetWidth + 'px' : 'auto';
 						wrapper.style.position = 'relative';
 					}
 
