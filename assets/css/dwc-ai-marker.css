@@ -2,7 +2,7 @@
 	position: relative !important;
 	display: inline-block !important;
 	/* Kein width: max-content - das entspricht bei einem Bild seiner intrinsischen
-	   Breite und sprengt schmalere Spalten. max-width haelt den Wrapper im Container. */
+	   Breite und sprengt schmalere Spalten. max-width hält den Wrapper im Container. */
 	max-width: 100%;
 	margin: 0 !important;
 	padding: 0 !important;

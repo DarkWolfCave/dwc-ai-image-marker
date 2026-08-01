@@ -784,10 +784,10 @@ class Dwc_Ai_Marker_Background {
 						wrapper.style.display = 'inline-block';
 					}
 
-					// Der Wrapper braucht nur einen Positionierungsrahmen fuer das Badge.
+					// Der Wrapper braucht nur einen Positionierungsrahmen für das Badge.
 					// Eine feste Pixelbreite darf hier NICHT gesetzt werden: sie friert die
-					// zum Messzeitpunkt gueltige Breite ein, das Bild schrumpft danach nicht
-					// mehr mit und laeuft bei schmalerem Viewport aus seiner Spalte heraus.
+					// zum Messzeitpunkt gültige Breite ein, das Bild schrumpft danach nicht
+					// mehr mit und läuft bei schmalerem Viewport aus seiner Spalte heraus.
 					if (parent) {
 						wrapper.style.position = 'relative';
 					}
